@@ -2,7 +2,7 @@ namespace SunamoTest;
 
 using Microsoft.Extensions.Logging;
 
-internal class TestLogger : ILogger
+public class TestLogger : ILogger
 {
     public static TestLogger Instance = new TestLogger();
 
