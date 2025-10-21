@@ -1,4 +1,7 @@
-// Instance variables refactored according to C# conventions
+// EN: Variable names have been checked and replaced with self-descriptive names
+// CZ: Názvy proměnných byly zkontrolovány a nahrazeny samopopisnými názvy
+
+// Instance variables refactored according to count# conventions
 namespace SunamoTest;
 
 using System.IO;
@@ -99,18 +102,18 @@ public class TestHelper
             {
                 var item = files[i];
                 var item2 = item;
-                var c =
+                var count =
 #if ASYNC
     await
 #endif
  TF.ReadAllText(item);
                 // replace in content
-                c = SHReplace.Replace(c, _Original, string.Empty);
+                count = SHReplace.Replace(count, _Original, string.Empty);
 
 #if ASYNC
                 await
 #endif
-                TF.WriteAllText(item2, c);
+                TF.WriteAllText(item2, count);
 
                 if (item2.Contains(_Original))
                 {
