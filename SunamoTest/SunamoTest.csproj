@@ -4,8 +4,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Description>Helpers for unit tests</Description>
-    <Version>26.2.7.2</Version>
-    <PackageReleaseNotes>feat: Enable debug symbols</PackageReleaseNotes>
+    <Version>26.3.28.3</Version>
+    <PackageReleaseNotes>feat: Improved variable names</PackageReleaseNotes>
     <Authors>www.sunamo.cz</Authors>
     <Copyright>www.sunamo.cz</Copyright>
     <PackageProjectUrl>https://sunamo.cz/</PackageProjectUrl>
@@ -18,6 +18,8 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <EmbedAllSources>true</EmbedAllSources>
     <Optimize>false</Optimize>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
   </PropertyGroup>
   <PropertyGroup>
     <DebugType>portable</DebugType>
@@ -28,6 +30,9 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.2" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.102" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="readme.md" Pack="true" PackagePath="\" />
   </ItemGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>$(DefineConstants);ASYNC</DefineConstants>

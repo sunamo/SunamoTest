@@ -1,10 +1,32 @@
 namespace SunamoTest;
 
+/// <summary>
+/// Provides test data constants for C# file names used in unit testing.
+/// </summary>
 public class TestDataCs
 {
-    public const string a = "a.cs";
-    public const string ab = "ab.cs";
-    public const string b = "b.cs";
-    public const string c = "c.cs";
-    public const string a2 = "a2.cs";
+    /// <summary>
+    /// Test C# file name "a.cs".
+    /// </summary>
+    public const string A = "a.cs";
+
+    /// <summary>
+    /// Test C# file name "ab.cs".
+    /// </summary>
+    public const string Ab = "ab.cs";
+
+    /// <summary>
+    /// Test C# file name "b.cs".
+    /// </summary>
+    public const string B = "b.cs";
+
+    /// <summary>
+    /// Test C# file name "c.cs".
+    /// </summary>
+    public const string C = "c.cs";
+
+    /// <summary>
+    /// Test C# file name "a2.cs".
+    /// </summary>
+    public const string A2 = "a2.cs";
 }

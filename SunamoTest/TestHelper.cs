@@ -3,61 +3,62 @@ namespace SunamoTest;
 using System.IO;
 
 /// <summary>
-/// Right format of paths are:
-/// D:\_Test\SunamoCzAdmin\SunamoCzAdmin.Wpf\ConvertMetroCss3To4\
-/// D:\_Test\SunamoCzAdmin\SunamoCzAdmin.Wpf\ConvertMetroCss3To4_Original\
+/// Provides helper methods for initializing and managing test environments.
 /// </summary>
 public class TestHelper
 {
-
-
+    /// <summary>
+    /// Initializes the test environment with default application name "sunamo".
+    /// </summary>
     public static void Init()
     {
         Init("sunamo");
     }
 
+    /// <summary>
+    /// Initializes the test environment with the specified application name.
+    /// </summary>
+    /// <param name="appName">The name of the application to initialize for testing.</param>
     public static void Init(string appName)
     {
         ThisApp.Name = appName;
         ThisApp.Project = appName;
 
-        // Dont - XlfResourcesH - error 'Could not load file or assembly 'System.Security.Principal.Windows, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a' or one of its dependencies. The system cannot find the file specified.'
-        //XlfResourcesH.SaveResouresToRL(VpsHelperSunamo.SunamoProject());
-        // OK XlfResourcesHSunamo
         XlfResourcesHSunamo.SaveResouresToRLSunamo(new LocalizationLanguages { });
 
-        //AppData.ci.GetFolderWithAppsFiles();
-        //AppData.ci.GetRootFolder();
-        AppData.ci.CreateAppFoldersIfDontExists(new CreateAppFoldersIfDontExistsArgs { });
-
+        AppData.Instance.CreateAppFoldersIfDontExists(new CreateAppFoldersIfDontExistsArgs { });
     }
 
+    /// <summary>
+    /// Returns the default folder path for test files based on the current application name and project.
+    /// </summary>
+    /// <returns>The default folder path.</returns>
     public static string DefaultFolderPath()
     {
         string appName = ThisApp.Name;
         string project = ThisApp.Project;
 
-        string folderFrom = @"D:\_Test\" + appName + "\\" + project;
-        return folderFrom;
+        string folderPath = Path.Combine(Path.GetTempPath(), "SunamoTest", appName, project);
+        return folderPath;
     }
 
     /// <summary>
-    /// A1 can be null, then will be joined default like D:\_Test\AllProjectsSearch\AllProjectsSearch\ by DefaultFolderPath()
-    /// A2 can be slashed or backslashed. Will be appended to A1.
-    /// To A2 will be add _Original automatically
-    /// A3 is append after folder and folderFrom (with _Original\). can be null or SE
-    ///
-    /// A5 whether replace _Original in non original Folder
+    /// Refreshes the original test files by copying them from the original folder to the working folder.
+    /// Optionally replaces occurrences of "_Original" in file names and content.
     /// </summary>
-    /// <param name="appName"></param>
-    /// <param name="featureOrType"></param>
+    /// <param name="baseFolder">The base folder path. If null, uses the default folder path.</param>
+    /// <param name="featureOrType">A Type, string, or object whose class name identifies the feature.</param>
+    /// <param name="modeOfFeature">An optional subfolder mode within the feature folder. Can be null or empty.</param>
+    /// <param name="isCopyingFilesRecursively">Whether to copy files from subfolders recursively.</param>
+    /// <param name="isReplacingOriginal">Whether to replace "_Original" in file names and content.</param>
+    /// <returns>A list of file paths in the working folder after refresh.</returns>
     public static
 #if ASYNC
     async Task<List<string>>
 #else
     List<string>
 #endif
- RefreshOriginalFiles(string baseFolder, object featureOrType, string modeOfFeature, bool copyFilesRecursively, bool replace_Original)
+ RefreshOriginalFiles(string baseFolder, object featureOrType, string modeOfFeature, bool isCopyingFilesRecursively, bool isReplacingOriginal)
     {
         if (baseFolder == null)
         {
@@ -68,54 +69,52 @@ public class TestHelper
 
         FS.WithoutEndSlash(ref baseFolder);
         baseFolder = baseFolder + "\\" + feature;
-        var folderFrom = baseFolder + "_Original\\";
-        string folder = baseFolder + "\\";
+        var originalFolder = baseFolder + "_Original\\";
+        string workingFolder = baseFolder + "\\";
 
         if (!string.IsNullOrEmpty(modeOfFeature))
         {
             modeOfFeature = modeOfFeature.TrimEnd('\\') + "\\";
-            folderFrom += modeOfFeature;
-            folder += modeOfFeature;
+            originalFolder += modeOfFeature;
+            workingFolder += modeOfFeature;
         }
 
-        Directory.GetFiles(folder, "*", copyFilesRecursively ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly).ToList().ForEach(d => FS.TryDeleteFile(d));
-        if (copyFilesRecursively)
+        Directory.GetFiles(workingFolder, "*", isCopyingFilesRecursively ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly).ToList().ForEach(filePath => FS.TryDeleteFile(filePath));
+        if (isCopyingFilesRecursively)
         {
-            FS.CopyAllFilesRecursively(folderFrom, folder, FileMoveCollisionOption.Overwrite);
+            FS.CopyAllFilesRecursively(originalFolder, workingFolder, FileMoveCollisionOption.Overwrite);
         }
         else
         {
-            FS.CopyAllFiles(folderFrom, folder, FileMoveCollisionOption.Overwrite);
+            FS.CopyAllFiles(originalFolder, workingFolder, FileMoveCollisionOption.Overwrite);
         }
 
-        var files = Directory.GetFiles(folder).ToList();
+        var files = Directory.GetFiles(workingFolder).ToList();
 
-        if (replace_Original)
+        if (isReplacingOriginal)
         {
-            const string _Original = "_Original";
+            const string originalSuffix = "_Original";
 
             for (int i = 0; i < files.Count; i++)
             {
-                var item = files[i];
-                var item2 = item;
-                var count =
+                var currentFile = files[i];
+                var content =
 #if ASYNC
     await
 #endif
- TF.ReadAllText(item);
-                // replace in content
-                count = SHReplace.Replace(count, _Original, string.Empty);
+ TF.ReadAllText(currentFile);
+                content = SHReplace.Replace(content, originalSuffix, string.Empty);
 
 #if ASYNC
                 await
 #endif
-                TF.WriteAllText(item2, count);
+                TF.WriteAllText(currentFile, content);
 
-                if (item2.Contains(_Original))
+                if (currentFile.Contains(originalSuffix))
                 {
-                    string newFile = item2.Replace(_Original, string.Empty);
-                    FS.MoveFile(item2, newFile, FileMoveCollisionOption.Overwrite);
-                    files[i] = newFile;
+                    string renamedFile = currentFile.Replace(originalSuffix, string.Empty);
+                    FS.MoveFile(currentFile, renamedFile, FileMoveCollisionOption.Overwrite);
+                    files[i] = renamedFile;
                 }
             }
         }
@@ -123,32 +122,31 @@ public class TestHelper
     }
 
     /// <summary>
-    /// A1 can be Type, string or any object, then is as name take name of it's class
+    /// Extracts the feature name from the given object, which can be a Type, string, or any object.
     /// </summary>
-    /// <param name="featureOrType"></param>
+    /// <param name="featureOrType">A Type, string, or object whose class name identifies the feature.</param>
+    /// <returns>The feature name as a string.</returns>
     private static string NameOfFeature(object featureOrType)
     {
-        string feature = null;
-        if (featureOrType is Type)
+        if (featureOrType is Type featureType)
         {
-            feature = (featureOrType as Type).Name;
+            return featureType.Name;
         }
-        else if (featureOrType is string)
+        else if (featureOrType is string featureString)
         {
-            return featureOrType.ToString();
+            return featureString;
         }
         else
         {
-            feature = featureOrType.GetType().Name;
+            return featureOrType.GetType().Name;
         }
-
-        return feature;
     }
 
     /// <summary>
-    /// Get backslashed
+    /// Returns the backslash-terminated folder path for test files of the specified feature.
     /// </summary>
-    /// <param name="featureOrType"></param>
+    /// <param name="featureOrType">A Type, string, or object whose class name identifies the feature.</param>
+    /// <returns>The folder path for test files.</returns>
     public static string FolderForTestFiles(object featureOrType)
     {
         string feature = NameOfFeature(featureOrType);
@@ -156,24 +154,31 @@ public class TestHelper
         string appName = ThisApp.Name;
         string project = ThisApp.Project;
 
-        var f = @"D:\_Test\" + appName + "\\" + project + SH.WrapWith(feature, AllChars.bs, true);
-        FS.CreateFoldersPsysicallyUnlessThere(f);
-        return f;
-    }
-
-
-
-    public static string TestFile(object featureOrType, string fn)
-    {
-        return FS.Combine(FolderForTestFiles(featureOrType), fn);
+        var folderPath = Path.Combine(Path.GetTempPath(), "SunamoTest", appName, project, feature) + "\\";
+        FS.CreateFoldersPsysicallyUnlessThere(folderPath);
+        return folderPath;
     }
 
     /// <summary>
-    ///
-    /// Path will be combined with ThisApp.Name and ThisApp.Project
+    /// Returns the full path to a test file within the feature's test folder.
     /// </summary>
-    public static string GetFileInProjectsFolder(string fileRelativeToProjectPath)
+    /// <param name="featureOrType">A Type, string, or object whose class name identifies the feature.</param>
+    /// <param name="fileName">The name of the test file.</param>
+    /// <returns>The full path to the test file.</returns>
+    public static string TestFile(object featureOrType, string fileName)
     {
-        return FS.Combine(@"E:\vs\Projects\", ThisApp.Name, ThisApp.Project, fileRelativeToProjectPath);
+        return FS.Combine(FolderForTestFiles(featureOrType), fileName);
+    }
+
+    /// <summary>
+    /// Returns the full path to a file relative to the project folder within the specified base directory.
+    /// The path is combined with ThisApp.Name and ThisApp.Project.
+    /// </summary>
+    /// <param name="projectsBasePath">The base directory containing the projects.</param>
+    /// <param name="fileRelativeToProjectPath">The file path relative to the project folder.</param>
+    /// <returns>The full path to the file.</returns>
+    public static string GetFileInProjectsFolder(string projectsBasePath, string fileRelativeToProjectPath)
+    {
+        return FS.Combine(projectsBasePath, ThisApp.Name, ThisApp.Project, fileRelativeToProjectPath);
     }
 }
