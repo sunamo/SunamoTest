@@ -55,7 +55,7 @@ public class UnitTest1
     [Fact]
     public void TypeWithPropertiesCanBeInstantiated()
     {
-        var instance = new TestValues.Data.TypeWithProperties
+        var instance = new SunamoTest.Data.TypeWithProperties
         {
             IntegerValue = 42,
             BooleanValue = true,
