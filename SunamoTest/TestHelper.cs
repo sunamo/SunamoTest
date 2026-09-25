@@ -2,23 +2,13 @@ namespace SunamoTest;
 
 using System.IO;
 
-/// <summary>
-/// Provides helper methods for initializing and managing test environments.
-/// </summary>
 public class TestHelper
 {
-    /// <summary>
-    /// Initializes the test environment with default application name "sunamo".
-    /// </summary>
     public static void Init()
     {
         Init("sunamo");
     }
 
-    /// <summary>
-    /// Initializes the test environment with the specified application name.
-    /// </summary>
-    /// <param name="appName">The name of the application to initialize for testing.</param>
     public static void Init(string appName)
     {
         ThisApp.Name = appName;
@@ -29,10 +19,6 @@ public class TestHelper
         AppData.Instance.CreateAppFoldersIfDontExists(new CreateAppFoldersIfDontExistsArgs { });
     }
 
-    /// <summary>
-    /// Returns the default folder path for test files based on the current application name and project.
-    /// </summary>
-    /// <returns>The default folder path.</returns>
     public static string DefaultFolderPath()
     {
         string appName = ThisApp.Name;
@@ -42,22 +28,8 @@ public class TestHelper
         return folderPath;
     }
 
-    /// <summary>
-    /// Refreshes the original test files by copying them from the original folder to the working folder.
-    /// Optionally replaces occurrences of "_Original" in file names and content.
-    /// </summary>
-    /// <param name="baseFolder">The base folder path. If null, uses the default folder path.</param>
-    /// <param name="featureOrType">A Type, string, or object whose class name identifies the feature.</param>
-    /// <param name="modeOfFeature">An optional subfolder mode within the feature folder. Can be null or empty.</param>
-    /// <param name="isCopyingFilesRecursively">Whether to copy files from subfolders recursively.</param>
-    /// <param name="isReplacingOriginal">Whether to replace "_Original" in file names and content.</param>
-    /// <returns>A list of file paths in the working folder after refresh.</returns>
     public static
-#if ASYNC
     async Task<List<string>>
-#else
-    List<string>
-#endif
  RefreshOriginalFiles(string baseFolder, object featureOrType, string modeOfFeature, bool isCopyingFilesRecursively, bool isReplacingOriginal)
     {
         if (baseFolder == null)
@@ -99,15 +71,11 @@ public class TestHelper
             {
                 var currentFile = files[i];
                 var content =
-#if ASYNC
     await
-#endif
  TF.ReadAllText(currentFile);
                 content = SHReplace.Replace(content, originalSuffix, string.Empty);
 
-#if ASYNC
                 await
-#endif
                 TF.WriteAllText(currentFile, content);
 
                 if (currentFile.Contains(originalSuffix))
@@ -121,11 +89,6 @@ public class TestHelper
         return files;
     }
 
-    /// <summary>
-    /// Extracts the feature name from the given object, which can be a Type, string, or any object.
-    /// </summary>
-    /// <param name="featureOrType">A Type, string, or object whose class name identifies the feature.</param>
-    /// <returns>The feature name as a string.</returns>
     private static string NameOfFeature(object featureOrType)
     {
         if (featureOrType is Type featureType)
@@ -142,11 +105,6 @@ public class TestHelper
         }
     }
 
-    /// <summary>
-    /// Returns the backslash-terminated folder path for test files of the specified feature.
-    /// </summary>
-    /// <param name="featureOrType">A Type, string, or object whose class name identifies the feature.</param>
-    /// <returns>The folder path for test files.</returns>
     public static string FolderForTestFiles(object featureOrType)
     {
         string feature = NameOfFeature(featureOrType);
@@ -159,24 +117,11 @@ public class TestHelper
         return folderPath;
     }
 
-    /// <summary>
-    /// Returns the full path to a test file within the feature's test folder.
-    /// </summary>
-    /// <param name="featureOrType">A Type, string, or object whose class name identifies the feature.</param>
-    /// <param name="fileName">The name of the test file.</param>
-    /// <returns>The full path to the test file.</returns>
     public static string TestFile(object featureOrType, string fileName)
     {
         return FS.Combine(FolderForTestFiles(featureOrType), fileName);
     }
 
-    /// <summary>
-    /// Returns the full path to a file relative to the project folder within the specified base directory.
-    /// The path is combined with ThisApp.Name and ThisApp.Project.
-    /// </summary>
-    /// <param name="projectsBasePath">The base directory containing the projects.</param>
-    /// <param name="fileRelativeToProjectPath">The file path relative to the project folder.</param>
-    /// <returns>The full path to the file.</returns>
     public static string GetFileInProjectsFolder(string projectsBasePath, string fileRelativeToProjectPath)
     {
         return FS.Combine(projectsBasePath, ThisApp.Name, ThisApp.Project, fileRelativeToProjectPath);
