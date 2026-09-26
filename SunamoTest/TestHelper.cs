@@ -53,11 +53,7 @@ public class TestHelper
     /// <param name="isReplacingOriginal">Whether to replace "_Original" in file names and content.</param>
     /// <returns>A list of file paths in the working folder after refresh.</returns>
     public static
-#if ASYNC
     async Task<List<string>>
-#else
-    List<string>
-#endif
  RefreshOriginalFiles(string baseFolder, object featureOrType, string modeOfFeature, bool isCopyingFilesRecursively, bool isReplacingOriginal)
     {
         if (baseFolder == null)
@@ -99,15 +95,11 @@ public class TestHelper
             {
                 var currentFile = files[i];
                 var content =
-#if ASYNC
     await
-#endif
  TF.ReadAllText(currentFile);
                 content = SHReplace.Replace(content, originalSuffix, string.Empty);
 
-#if ASYNC
                 await
-#endif
                 TF.WriteAllText(currentFile, content);
 
                 if (currentFile.Contains(originalSuffix))
