@@ -1,7 +1,10 @@
 ---
-schema_version: 10
+schema_version: 11
 type: tooling
+category_override: none
 file_count: 40
+file_extensions: cs:24, md:8, csproj:3, noext:2, json:1, slnx:1, txt:1, yml:1
+file_extensions_updated: 2026-10-04
 avg_lines_per_file: 48
 total_lines: 1456
 metrics_lm: 2026-10-04 16:02:36
