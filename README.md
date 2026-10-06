@@ -1,5 +1,10 @@
 # SunamoTest
 
+## Short description
+
+Pomocné třídy pro unit testy, například TypeWithProperties a práce s výjimkami v testech. Součást sbírky pinp s testy a Runnerem.
+
+
 Helpers for unit tests
 
 ## Overview
